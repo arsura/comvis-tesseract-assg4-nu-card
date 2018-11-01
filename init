@@ -1,0 +1,6 @@
+#!/bin/bash
+
+mkdir video
+mkdir output
+mkdir output/crop_thrs_img
+mkdir output/tesseract_output

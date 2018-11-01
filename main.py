@@ -1,8 +1,11 @@
 import numpy as np
 import cv2 as cv
+import os
 
 SRC_DIR = "video/nu_card_test.mp4"
-CROP_OUTPUT_DIR = "output/"
+CROP_THRS_DIR = "output/crop_thrs_img/"
+TESSERACT_OUTPUT_DIR = "output/tesseract_output/"
+
 cv.namedWindow("frame", cv.WINDOW_NORMAL)
 
 def tesseract_cmd(src_path, image, des_path, lang):
@@ -21,7 +24,7 @@ def main():
         thrsh_ret, threshold_frame = cv.threshold(gray, 100, 255, cv.THRESH_BINARY)
         thrsh_for_text_ret, threshold_frame_for_text = cv.threshold(gray, 25, 255, cv.THRESH_BINARY)
 
-        ret_contures, contours, hierarchy = cv.findContours(threshold_frame, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv.findContours(threshold_frame, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
         max_h = 1
         max_w = 1
         for contour in contours:
@@ -43,11 +46,14 @@ def main():
 
         crop_img = threshold_frame_for_text[crop_size["y"]:crop_size["height"], crop_size["x"]:crop_size["wide"]]
         crop_img = cv.resize(crop_img, None, fx=0.7, fy=0.7)
-        cv.imwrite("{}{}".format(CROP_OUTPUT_DIR, "crop_threshold.jpg"), crop_img)
+        cv.imwrite("{}{}".format(CROP_THRS_DIR, "crop_threshold.jpg"), crop_img)
 
+        # read text by tesseract
+        tesseract_cmd(CROP_THRS_DIR, "crop_threshold.jpg", TESSERACT_OUTPUT_DIR, "tha+eng")
+        break
         # validate
 
-        cv.imshow("frame", threshold_frame_for_text)
+        # cv.imshow("frame", threshold_frame_for_text)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
 
