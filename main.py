@@ -1,12 +1,9 @@
-import numpy as np
-import cv2 as cv
 import os
+import cv2 as cv
+import numpy as np
+from dir import *
+from readfile import read_line_to_list
 
-SRC_DIR = "video/nu_card_test.mp4"
-CROP_THRS_DIR = "output/crop_thrs_img/"
-TESSERACT_OUTPUT_DIR = "output/tesseract_output/"
-
-cv.namedWindow("frame", cv.WINDOW_NORMAL)
 
 def tesseract_cmd(src_path, image, des_path, lang):
     os.system("tesseract {}{} {}{} -l {} -c preserve_interword_spaces=1".format(src_path, image, des_path, image, lang)) 
@@ -48,12 +45,20 @@ def main():
         crop_img = cv.resize(crop_img, None, fx=0.7, fy=0.7)
         cv.imwrite("{}{}".format(CROP_THRS_DIR, "crop_threshold.jpg"), crop_img)
 
-        # read text by tesseract
+        # tesseract process
         tesseract_cmd(CROP_THRS_DIR, "crop_threshold.jpg", TESSERACT_OUTPUT_DIR, "tha+eng")
-        break
+
+        # read data
+        nu_card_data = read_line_to_list(TESSERACT_OUTPUT_DIR + "crop_threshold.jpg.txt")
+        university_name = nu_card_data[0]
+        name = nu_card_data[2]
+        nu_id = nu_card_data[4]
+
+        print(university_name, name, nu_id)
         # validate
 
-        # cv.imshow("frame", threshold_frame_for_text)
+        break
+
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
 
