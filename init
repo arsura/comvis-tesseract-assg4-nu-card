@@ -1,6 +1,12 @@
 #!/bin/bash
 
+rm -r output/crop_thrs_img/
+rm -r output/tesseract_output/
+rm -r output/nu_card_data/
+
 mkdir video
 mkdir output
 mkdir output/crop_thrs_img
 mkdir output/tesseract_output
+mkdir output/nu_card_data/
+
