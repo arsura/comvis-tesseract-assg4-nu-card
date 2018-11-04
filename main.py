@@ -68,18 +68,18 @@ def main():
             name = nu_card_data[index_id - 2]
             new_nu_card_data = [nu_id, name]
         except:
-            print("Can't find ID Name or University Name")
+            print("Not found ID, Name or University Name")
             continue
 
         # validate
         is_nu_card = university_name_validate("Naresuan University", university_name)
 
         if (not is_nu_card): 
-            print("Not Nu Card")
+            print("Not found NU card")
             continue
 
         if (index_id == -1):
-            print("Not Found ID")
+            print("Not found ID")
             continue
 
         # write data
