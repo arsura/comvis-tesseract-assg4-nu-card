@@ -15,7 +15,7 @@ def dont_equal_frame_screen(src_w, src_h, current_w, current_h):
     return src_h != current_h and src_w != current_w
 
 def main():
-    cap = cv.VideoCapture(1)
+    cap = cv.VideoCapture(SRC_DIR)
     while(True):
         frame_ret, frame = cap.read()
         frame_height, frame_width = frame.shape[:2]
