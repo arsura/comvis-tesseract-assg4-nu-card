@@ -1,12 +1,16 @@
 import datetime
+import time
 import os
 import cv2 as cv
 import numpy as np
 from dir import *
 from read_write import read_line_to_list, write_line
 from validate import *
+from pytesseract_cmd import pytesseract_cmd
 
-cv.namedWindow("windows", cv.WINDOW_NORMAL)
+cv.namedWindow("frame_with_rect", cv.WINDOW_NORMAL)
+cv.namedWindow("threshold_for_text", cv.WINDOW_NORMAL)
+cv.namedWindow("threshold_frame", cv.WINDOW_NORMAL)
 
 def tesseract_cmd(src_path, image, des_path, lang):
     os.system("tesseract {}{} {}{} -l {} -c preserve_interword_spaces=1".format(src_path, image, des_path, image, lang)) 
@@ -22,9 +26,9 @@ def main():
 
         gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         thrsh_ret, threshold_frame = cv.threshold(gray, 100, 255, cv.THRESH_BINARY)
-        thrsh_for_text_ret, threshold_frame_for_text = cv.threshold(gray, 40, 255, cv.THRESH_BINARY)
+        thrsh_for_text_ret, threshold_frame_for_text = cv.threshold(gray, 20, 255, cv.THRESH_BINARY)
 
-        ret, contours, hierarchy = cv.findContours(threshold_frame, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv.findContours(threshold_frame, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
         max_x = max_y = max_w = max_h = 1
 
         for contour in contours:
@@ -60,8 +64,8 @@ def main():
         tesseract_cmd(CROP_THRS_DIR, file_name, TESSERACT_OUTPUT_DIR, "tha+eng")
 
         # read data
-        nu_card_data = read_line_to_list(TESSERACT_OUTPUT_DIR + "{}_crop_thrs_img.jpg.txt".format(time_now))
         try:
+            nu_card_data = read_line_to_list(TESSERACT_OUTPUT_DIR + "{}_crop_thrs_img.jpg.txt".format(time_now))
             index_id = find_id(nu_card_data)
             university_name = nu_card_data[index_id - 4]
             nu_id = nu_card_data[index_id]
@@ -90,7 +94,10 @@ def main():
         photo_name = "{}_{}.jpg".format(time_now, nu_id)
         cv.imwrite("{}{}".format(NU_CARD_DATA, photo_name), crop_nu_card_photo)
 
-        cv.imshow("windows", threshold_frame_for_text)
+        time.sleep(1)
+        cv.imshow("frame_with_rect", frame)
+        cv.imshow("threshold_for_text", threshold_frame_for_text)
+        cv.imshow("threshold_frame", threshold_frame)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
 
