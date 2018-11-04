@@ -15,16 +15,16 @@ def dont_equal_frame_screen(src_w, src_h, current_w, current_h):
     return src_h != current_h and src_w != current_w
 
 def main():
-    cap = cv.VideoCapture(SRC_DIR)
-    while(cap.isOpened()):
+    cap = cv.VideoCapture(1)
+    while(True):
         frame_ret, frame = cap.read()
         frame_height, frame_width = frame.shape[:2]
 
         gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         thrsh_ret, threshold_frame = cv.threshold(gray, 100, 255, cv.THRESH_BINARY)
-        thrsh_for_text_ret, threshold_frame_for_text = cv.threshold(gray, 20, 255, cv.THRESH_BINARY)
+        thrsh_for_text_ret, threshold_frame_for_text = cv.threshold(gray, 40, 255, cv.THRESH_BINARY)
 
-        contours, hierarchy = cv.findContours(threshold_frame, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        ret, contours, hierarchy = cv.findContours(threshold_frame, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
         max_x = max_y = max_w = max_h = 1
 
         for contour in contours:
@@ -43,7 +43,7 @@ def main():
             "wide": (max_x + max_w)
         }
 
-        # cv.rectangle(frame, (crop_size["x"], crop_size["y"]), (crop_size["wide"], crop_size["height"]), (0, 255, 0), 5)
+        cv.rectangle(frame, (crop_size["x"], crop_size["y"]), (crop_size["wide"], crop_size["height"]), (0, 255, 0), 5)
         
         # Draw rect on photo
         # cv.rectangle(frame, (crop_size["x"] + 850, crop_size["y"] + 320), (crop_size["x"] + 1150, crop_size["y"] + 670), (0, 255, 0), 5)
@@ -61,11 +61,15 @@ def main():
 
         # read data
         nu_card_data = read_line_to_list(TESSERACT_OUTPUT_DIR + "{}_crop_thrs_img.jpg.txt".format(time_now))
-        index_id = find_id(nu_card_data)
-        university_name = nu_card_data[index_id - 4]
-        nu_id = nu_card_data[index_id]
-        name = nu_card_data[index_id - 2]
-        new_nu_card_data = [nu_id, name]
+        try:
+            index_id = find_id(nu_card_data)
+            university_name = nu_card_data[index_id - 4]
+            nu_id = nu_card_data[index_id]
+            name = nu_card_data[index_id - 2]
+            new_nu_card_data = [nu_id, name]
+        except:
+            print("Can't find ID Name or University Name")
+            continue
 
         # validate
         is_nu_card = university_name_validate("Naresuan University", university_name)
@@ -86,7 +90,7 @@ def main():
         photo_name = "{}_{}.jpg".format(time_now, nu_id)
         cv.imwrite("{}{}".format(NU_CARD_DATA, photo_name), crop_nu_card_photo)
 
-        cv.imshow("windows", frame)
+        cv.imshow("windows", threshold_frame_for_text)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
 
