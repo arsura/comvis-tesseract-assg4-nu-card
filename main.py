@@ -19,14 +19,17 @@ def dont_equal_frame_screen(src_w, src_h, current_w, current_h):
     return src_h != current_h and src_w != current_w
 
 def main():
-    cap = cv.VideoCapture(SRC_DIR)
-    while(True):
+    cap = cv.VideoCapture(1)
+    cap.set(3, 1366)
+    cap.set(4, 768)
+    i = 0
+    while(i != 20):
         frame_ret, frame = cap.read()
         frame_height, frame_width = frame.shape[:2]
 
         gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        thrsh_ret, threshold_frame = cv.threshold(gray, 100, 255, cv.THRESH_BINARY)
-        thrsh_for_text_ret, threshold_frame_for_text = cv.threshold(gray, 20, 255, cv.THRESH_BINARY)
+        thrsh_ret, threshold_frame = cv.threshold(gray, 130, 255, cv.THRESH_BINARY)
+        thrsh_for_text_ret, threshold_frame_for_text = cv.threshold(gray, 40, 255, cv.THRESH_BINARY)
 
         contours, hierarchy = cv.findContours(threshold_frame, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
         max_x = max_y = max_w = max_h = 1
@@ -41,7 +44,7 @@ def main():
                 max_y = y
 
         crop_size = {
-            "x": max_x,
+            "x": max_x + 150,
             "y": max_y,
             "height": (max_y + max_h),
             "wide": (max_x + max_w)
@@ -50,10 +53,10 @@ def main():
         cv.rectangle(frame, (crop_size["x"], crop_size["y"]), (crop_size["wide"], crop_size["height"]), (0, 255, 0), 5)
         
         # Draw rect on photo
-        # cv.rectangle(frame, (crop_size["x"] + 850, crop_size["y"] + 320), (crop_size["x"] + 1150, crop_size["y"] + 670), (0, 255, 0), 5)
+        cv.rectangle(frame, (crop_size["x"] + 370, crop_size["y"] + 210), (crop_size["x"] + 550, crop_size["y"] + 420), (0, 0, 0), 5)
 
         crop_img = threshold_frame_for_text[crop_size["y"]:crop_size["height"], crop_size["x"]:crop_size["wide"]]
-        crop_img = cv.resize(crop_img, None, fx=0.7, fy=0.7)
+        # crop_img = cv.resize(crop_img, None, fx=0.7, fy=0.7)
 
         time_now = "{:%Y-%m-%d_%H:%M:%S}".format(datetime.datetime.now())
         file_name = "{}_crop_thrs_img.jpg".format(time_now)
@@ -90,14 +93,14 @@ def main():
         data_name = "{}_{}.txt".format(time_now, nu_id)
         write_line(NU_CARD_DATA, data_name, new_nu_card_data)
 
-        crop_nu_card_photo = frame[crop_size["y"] + 320:crop_size["y"] + 670, crop_size["x"] + 850:crop_size["x"] + 1150]
+        crop_nu_card_photo = frame[crop_size["y"] + 210:crop_size["y"] + 420, crop_size["x"] + 370:crop_size["x"] + 550]
         photo_name = "{}_{}.jpg".format(time_now, nu_id)
         cv.imwrite("{}{}".format(NU_CARD_DATA, photo_name), crop_nu_card_photo)
 
-        time.sleep(1)
         cv.imshow("frame_with_rect", frame)
         cv.imshow("threshold_for_text", threshold_frame_for_text)
         cv.imshow("threshold_frame", threshold_frame)
+        i = i + 1
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
 
